@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using IdentityNetCore.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -39,6 +36,10 @@ namespace IdentityNetCore
             
             });
 
+            services.ConfigureApplicationCookie(option=> {
+                option.LoginPath = "/Identity/Signin";
+                option.AccessDeniedPath = "/Identity/AccessDenied";
+            });
 
             services.AddControllersWithViews();
         }
