@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Identity;
+using IdentityNetCore.Service;
 
 namespace IdentityNetCore
 {
@@ -25,6 +26,7 @@ namespace IdentityNetCore
             var connString = Configuration["ConnectionStrings:Default"];
             services.AddDbContext<ApplicationDBContext>(o => o.UseSqlServer(connString));
             services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDBContext>();
+           
             services.Configure<IdentityOptions>(options => {
 
                 options.Password.RequiredLength = 3;
@@ -33,6 +35,8 @@ namespace IdentityNetCore
 
                 options.Lockout.MaxFailedAccessAttempts = 3;
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10);
+
+                options.SignIn.RequireConfirmedEmail = true;
             
             });
 
@@ -40,6 +44,10 @@ namespace IdentityNetCore
                 option.LoginPath = "/Identity/Signin";
                 option.AccessDeniedPath = "/Identity/AccessDenied";
             });
+
+            services.Configure<SmtpOptions>(Configuration.GetSection("Smtp"));
+
+            services.AddSingleton<IEmailSender, SmtpEmailSender>();
 
             services.AddControllersWithViews();
         }
