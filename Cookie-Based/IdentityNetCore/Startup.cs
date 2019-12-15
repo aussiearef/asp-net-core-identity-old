@@ -43,6 +43,7 @@ namespace IdentityNetCore
             services.ConfigureApplicationCookie(option=> {
                 option.LoginPath = "/Identity/Signin";
                 option.AccessDeniedPath = "/Identity/AccessDenied";
+                option.ExpireTimeSpan = TimeSpan.FromHours(10);
             });
 
             services.Configure<SmtpOptions>(Configuration.GetSection("Smtp"));
