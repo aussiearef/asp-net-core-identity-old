@@ -14,6 +14,9 @@ namespace IdentityNetCore.Models
 
         [Required]
         public string Role { get; set; }
+
+        [Required]
+        public string Department { get; set; }
     }
 }
 

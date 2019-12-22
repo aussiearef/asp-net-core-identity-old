@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using IdentityNetCore.Models;
 using IdentityNetCore.Service;
@@ -58,6 +59,8 @@ namespace IdentityNetCore.Controllers
                    var result = await _userManager.CreateAsync(user, model.Password);
                     if (result.Succeeded)
                     {
+                        var claim = new Claim("Department", model.Department);
+                        await _userManager.AddClaimAsync(user, claim);
                         await _userManager.AddToRoleAsync(user, model.Role);
                         return RedirectToAction("Signin");
                     }
@@ -96,7 +99,17 @@ namespace IdentityNetCore.Controllers
                 var result = await _signInManager.PasswordSignInAsync(model.Username, model.Password, model.RememberMe, false);
                 if (result.Succeeded)
                 {
+
                     var user = await _userManager.FindByEmailAsync(model.Username);
+
+                    var userClaims = await _userManager.GetClaimsAsync(user);
+
+                    if (!userClaims.Any(x => x.Type == "Department"))
+                    {
+                        ModelState.AddModelError("Claim", "User not in tech department");
+                        return View(model);
+                    }
+
                     if (await _userManager.IsInRoleAsync(user, "Member"))
                     {
                         return RedirectToAction("Member", "Home");
