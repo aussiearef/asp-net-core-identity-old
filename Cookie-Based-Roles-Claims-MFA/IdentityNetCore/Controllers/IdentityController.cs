@@ -127,24 +127,42 @@ namespace IdentityNetCore.Controllers
             if (ModelState.IsValid)
             {
                 var result = await _signInManager.PasswordSignInAsync(model.Username, model.Password, model.RememberMe, false);
-                if (result.Succeeded)
+                if (result.RequiresTwoFactor)
                 {
-
-                    var user = await _userManager.FindByEmailAsync(model.Username);
-
-                    var userClaims = await _userManager.GetClaimsAsync(user);
-
-                    if (await _userManager.IsInRoleAsync(user, "Member"))
-                    {
-                        return RedirectToAction("Member", "Home");
-                    }
+                    return RedirectToAction("MFACheck");
                 }
                 else
                 {
-                    ModelState.AddModelError("Login", "Cannot login.");
+                    if (!result.Succeeded)
+                    {
+                        ModelState.AddModelError("Login", "Cannot login.");
+                    }
+                    else
+                    {
+                        return RedirectToAction("Index", "Home");
+                    }
                 }
             }
                 return View(model);
+        }
+
+        public IActionResult MFACheck()
+        {
+            return View(new MNFACheckViewModel());
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> MFACheck(MNFACheckViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var result = await _signInManager.TwoFactorAuthenticatorSignInAsync(model.Code, false, false);
+                if (result.Succeeded)
+                {
+                    return RedirectToAction("Index", "Home", null); 
+                }
+            }
+            return View(model);
         }
 
         public async Task<IActionResult> AccessDenied()
