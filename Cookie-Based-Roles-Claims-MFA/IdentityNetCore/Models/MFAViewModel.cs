@@ -9,5 +9,7 @@ namespace IdentityNetCore.Models
 
         [Required]
         public string Code { get; set; }
+
+        public string   QRCodeUrl { get; set; }
     }
 }

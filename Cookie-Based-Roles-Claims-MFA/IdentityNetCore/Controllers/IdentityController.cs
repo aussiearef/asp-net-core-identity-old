@@ -77,10 +77,13 @@ namespace IdentityNetCore.Controllers
         [Authorize]
         public async Task<IActionResult> MFASetup()
         {
+            const string provider = "aspnetidentity";
             var user = await _userManager.GetUserAsync(User);
             await _userManager.ResetAuthenticatorKeyAsync(user);
             var token = await _userManager.GetAuthenticatorKeyAsync(user);
-            var model = new MFAViewModel {Token = token };
+            var qrCodeUrl = $"otpauth://totp/{provider}:{user.Email}?secret={token}&issuer={provider}&digits=6";
+
+            var model = new MFAViewModel {Token = token , QRCodeUrl= qrCodeUrl };
             return View(model);
         }
 
