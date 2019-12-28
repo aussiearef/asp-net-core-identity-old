@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using IdentityNetCore.Models;
 using IdentityNetCore.Service;
@@ -39,7 +40,14 @@ namespace IdentityNetCore.Controllers
 
         public async Task<IActionResult> ExternalLoginCallback()
         {
-            return View();
+            var info = await _signInManager.GetExternalLoginInfoAsync();
+            var emailClaim = info.Principal.Claims.FirstOrDefault(x=> x.Type == ClaimTypes.Email);
+            var user = new IdentityUser {Email = emailClaim.Value , UserName = emailClaim.Value };
+            await _userManager.CreateAsync(user);
+            await _userManager.AddLoginAsync(user, info);
+            await _signInManager.SignInAsync(user, false);
+
+            return RedirectToAction("Index", "Home");
         }
 
         [HttpPost]
