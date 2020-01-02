@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using IdentityNetCore.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -8,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Identity;
 using IdentityNetCore.Service;
+using Microsoft.IdentityModel.Tokens;
 
 namespace IdentityNetCore
 {
@@ -51,6 +53,24 @@ namespace IdentityNetCore
             services.AddSingleton<IEmailSender, SmtpEmailSender>();
 
             services.AddControllersWithViews();
+
+            var issuer = Configuration["Tokens:Issuer"];
+            var audience = Configuration["Tokens:Audience"];
+            var key = Configuration["Tokens:Key"];
+
+            services.AddAuthentication().AddJwtBearer(options =>
+            {
+
+                options.RequireHttpsMetadata = false;
+                options.SaveToken = true;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidIssuer = issuer,
+                    ValidAudience = audience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
+                };
+            });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
