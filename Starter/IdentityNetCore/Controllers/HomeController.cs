@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using IdentityNetCore.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace IdentityNetCore.Controllers
 {
@@ -23,11 +24,13 @@ namespace IdentityNetCore.Controllers
             return View();
         }
 
+        [Authorize]
         public IActionResult Member()
         {
             return View();
         }
 
+        [Authorize]
         public IActionResult Admin()
         {
             return View();

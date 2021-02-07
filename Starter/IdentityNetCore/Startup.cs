@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using IdentityNetCore.Data;
+using IdentityNetCore.Service;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,6 +28,28 @@ namespace IdentityNetCore
         {
             var connString = Configuration["ConnectionStrings:Default"];
             services.AddDbContext<ApplicationDBContext>(o => o.UseSqlServer(connString));
+            services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDBContext>();
+            services.Configure<IdentityOptions>(options =>
+            {
+                options.Password.RequiredLength = 3;
+                options.Password.RequireDigit = true;
+                options.Password.RequireNonAlphanumeric = false;
+
+                options.Lockout.MaxFailedAccessAttempts = 3;
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10);
+
+                options.SignIn.RequireConfirmedEmail = true;
+            });
+
+            services.ConfigureApplicationCookie(options =>
+            {
+                options.LoginPath = "/Identity/Signin";
+                options.AccessDeniedPath = "/Identity/AccessDenied";
+            });
+
+            services.Configure<SmtpOptions>(Configuration.GetSection("Smtp"));
+
+            services.AddSingleton<IEmailSender, SmtpEmailSender>();
             services.AddControllersWithViews();
         }
 
@@ -44,6 +68,7 @@ namespace IdentityNetCore
 
             app.UseRouting();
 
+            app.UseAuthorization();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
