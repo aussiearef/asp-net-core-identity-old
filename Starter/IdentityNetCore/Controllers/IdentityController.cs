@@ -53,7 +53,7 @@ namespace IdentityNetCore.Controllers
                     }
 
                     ModelState.AddModelError("Signup", string.Join("", result.Errors.Select(x => x.Description)));
-                    return View(model);
+                    return View(model); 
                 }
             }
 
