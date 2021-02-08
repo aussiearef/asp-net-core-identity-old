@@ -28,7 +28,7 @@ namespace IdentityNetCore
         {
             var connString = Configuration["ConnectionStrings:Default"];
             services.AddDbContext<ApplicationDBContext>(o => o.UseSqlServer(connString));
-            services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDBContext>();
+            services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDBContext>().AddDefaultTokenProviders();
             services.Configure<IdentityOptions>(options =>
             {
                 options.Password.RequiredLength = 3;
@@ -45,6 +45,7 @@ namespace IdentityNetCore
             {
                 options.LoginPath = "/Identity/Signin";
                 options.AccessDeniedPath = "/Identity/AccessDenied";
+                options.ExpireTimeSpan = TimeSpan.FromHours(10);
             });
 
             services.Configure<SmtpOptions>(Configuration.GetSection("Smtp"));
