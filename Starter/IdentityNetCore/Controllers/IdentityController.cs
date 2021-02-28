@@ -43,16 +43,17 @@ namespace IdentityNetCore.Controllers
                     };
 
                     var result = await _userManager.CreateAsync(user, model.Password);
+
+                    //Kullanıcıyı tekrar çekerek kullanıcının veritabanında yaratıldığından emin oluyoruz.
                     user = await _userManager.FindByEmailAsync(model.Email);
 
                     var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
                     if (result.Succeeded)
                     {
-                        var confirmationLink = Url.ActionLink("ConfirmEmail", "Identity",
-                            new {userId = user.Id, @token = token});
-                        await _emailSender.SendEmailAsync("utkukaplan06@hotmail.com", user.Email, "Confirm your addess",
-                            confirmationLink);
+                        var confirmationLink = Url.ActionLink("ConfirmEmail", "Identity", new {userId = user.Id, @token = token});
+
+                        await _emailSender.SendEmailAsync("utkukaplan06@hotmail.com", user.Email, "Confirm your addess",confirmationLink);
 
                         return RedirectToAction("Signin");
                     }
