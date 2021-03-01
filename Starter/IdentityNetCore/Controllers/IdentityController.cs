@@ -15,8 +15,7 @@ namespace IdentityNetCore.Controllers
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly IEmailSender _emailSender;
 
-        public IdentityController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager,
-            IEmailSender emailSender)
+        public IdentityController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, IEmailSender emailSender)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -95,6 +94,12 @@ namespace IdentityNetCore.Controllers
                 {
                     return RedirectToAction("Index");
                 }
+                //else
+                //{
+                //    result.IsLockedOut gibi propertyleri kullanarak kontroller yapabiliriz. 
+                //    Ama güvenlik açısından mümkün olduğunca geri dönüş hatalarını açıklayıcı şekilde vermemeliyiz.
+                //}
+
 
                 ModelState.AddModelError("Login", "Cannot login.");
             }
