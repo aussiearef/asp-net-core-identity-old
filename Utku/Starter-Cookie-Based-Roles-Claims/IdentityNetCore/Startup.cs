@@ -51,7 +51,7 @@ namespace IdentityNetCore
             services.Configure<SmtpOptions>(Configuration.GetSection("Smtp"));
 
             services.AddSingleton<IEmailSender, SmtpEmailSender>();
-            services.AddControllersWithViews();
+            services.AddControllersWithViews().AddRazorRuntimeCompilation();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -69,7 +69,7 @@ namespace IdentityNetCore
 
             app.UseRouting();
 
-            app.UseAuthorization();
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
