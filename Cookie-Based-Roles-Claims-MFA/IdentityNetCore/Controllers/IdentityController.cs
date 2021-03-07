@@ -28,7 +28,7 @@ namespace IdentityNetCore.Controllers
         }
         public async Task<IActionResult> Signup()
         {
-            var model = new SignupViewModel() {Role = "Member" };
+            var model = new SignupViewModel() { Role = "Member" };
             return View(model);
         }
 
@@ -39,12 +39,12 @@ namespace IdentityNetCore.Controllers
             {
                 if (!(await _roleManager.RoleExistsAsync(model.Role)))
                 {
-                    var role = new IdentityRole {Name = model.Role };
+                    var role = new IdentityRole { Name = model.Role };
                     var roleResult = await _roleManager.CreateAsync(role);
                     if (!roleResult.Succeeded)
                     {
                         var errors = roleResult.Errors.Select(s => s.Description);
-                        ModelState.AddModelError("Role", string.Join("," , errors));
+                        ModelState.AddModelError("Role", string.Join(",", errors));
                         return View(model);
                     }
                 }
@@ -52,12 +52,13 @@ namespace IdentityNetCore.Controllers
 
                 if ((await _userManager.FindByEmailAsync(model.Email)) == null)
                 {
-                    var user = new IdentityUser { 
-                        Email= model.Email,
+                    var user = new IdentityUser
+                    {
+                        Email = model.Email,
                         UserName = model.Email
                     };
 
-                   var result = await _userManager.CreateAsync(user, model.Password);
+                    var result = await _userManager.CreateAsync(user, model.Password);
                     if (result.Succeeded)
                     {
                         var claim = new Claim("Department", model.Department);
@@ -83,7 +84,7 @@ namespace IdentityNetCore.Controllers
             var token = await _userManager.GetAuthenticatorKeyAsync(user);
             var qrCodeUrl = $"otpauth://totp/{provider}:{user.Email}?secret={token}&issuer={provider}&digits=6";
 
-            var model = new MFAViewModel {Token = token , QRCodeUrl= qrCodeUrl };
+            var model = new MFAViewModel { Token = token, QRCodeUrl = qrCodeUrl };
             return View(model);
         }
 
@@ -107,11 +108,11 @@ namespace IdentityNetCore.Controllers
             return View(model);
         }
 
-            public async Task<IActionResult> ConfirmEmail(string userId, string token)
+        public async Task<IActionResult> ConfirmEmail(string userId, string token)
         {
             var user = await _userManager.FindByIdAsync(userId);
 
-            var result =  await _userManager.ConfirmEmailAsync(user, token);
+            var result = await _userManager.ConfirmEmailAsync(user, token);
             if (result.Succeeded)
             {
                 return RedirectToAction("Signin");
@@ -146,7 +147,7 @@ namespace IdentityNetCore.Controllers
                     }
                 }
             }
-                return View(model);
+            return View(model);
         }
 
         public IActionResult MFACheck()
@@ -162,7 +163,7 @@ namespace IdentityNetCore.Controllers
                 var result = await _signInManager.TwoFactorAuthenticatorSignInAsync(model.Code, false, false);
                 if (result.Succeeded)
                 {
-                    return RedirectToAction("Index", "Home", null); 
+                    return RedirectToAction("Index", "Home", null);
                 }
             }
             return View(model);
