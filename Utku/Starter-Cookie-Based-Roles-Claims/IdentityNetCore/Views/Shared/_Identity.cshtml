@@ -11,7 +11,7 @@
         <label>Hello @User.Identity.Name (@User.Claims.FirstOrDefault(c => c.Type == "Department"))</label>
     </li>
 }
-else
+else 
 {
     <li class="nav-item">
         <a class="nav-link text-dark" asp-controller="Identity" asp-action="Signup">Sign up</a>
