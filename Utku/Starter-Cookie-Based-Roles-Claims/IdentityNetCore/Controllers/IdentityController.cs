@@ -105,7 +105,6 @@ namespace IdentityNetCore.Controllers
                 if (result.Succeeded)
                 {
                     var user = await _userManager.FindByEmailAsync(model.Username);
-
                     var userClaims = await _userManager.GetClaimsAsync(user);
 
                     //if (!userClaims.Any(x => x.Type == "Department"))
