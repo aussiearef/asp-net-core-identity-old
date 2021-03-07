@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using IdentityNetCore.Models;
 using IdentityNetCore.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -77,6 +78,43 @@ namespace IdentityNetCore.Controllers
             return View(model);
         }
 
+        [Authorize]
+        public async Task<IActionResult> MFASetup()
+        {
+            const string provider = "aspnetidentity";
+            var user = await _userManager.GetUserAsync(User);
+
+            // Sayfa her yenilendiğinde resetleyip yeniden oluşturmalıyız.
+            await _userManager.ResetAuthenticatorKeyAsync(user);
+            var token = await _userManager.GetAuthenticatorKeyAsync(user);
+            var qrCodeUrl = $"otpauth://totp/{provider}:{user.Email}?secret={token}&issuer={provider}&digit=6";
+
+            var model = new MFAViewModel{Token = token , QRCodeUrl = qrCodeUrl};
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> MFASetup(MFAViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _userManager.GetUserAsync(User);
+                var succeeded = await _userManager.VerifyTwoFactorTokenAsync(user, _userManager.Options.Tokens.AuthenticatorTokenProvider, model.Code);
+                if (succeeded)
+                {
+                    await _userManager.SetTwoFactorEnabledAsync(user, true);
+                }
+                else
+                {
+                    ModelState.AddModelError("Verify", "Your MFA code could not be validated");
+                }
+            }
+
+            return View(model);
+        }
+
         public async Task<IActionResult> ConfirmEmail(string userId, string token)
         {
             var user = await _userManager.FindByIdAsync(userId);
@@ -102,33 +140,42 @@ namespace IdentityNetCore.Controllers
             {
                 var result = await _signInManager.PasswordSignInAsync(model.Username, model.Password, model.RememberMe, false);
 
-                if (result.Succeeded)
+                if (result.RequiresTwoFactor)
                 {
-                    var user = await _userManager.FindByEmailAsync(model.Username);
-
-                    var userClaims = await _userManager.GetClaimsAsync(user);
-
-                    //if (!userClaims.Any(x => x.Type == "Department"))
-                    //{
-                    //    ModelState.AddModelError("Claim", "User not in tech department.");
-                    //    return View(model);
-                    //}
-
-                    if (await _userManager.IsInRoleAsync(user, "Member"))
+                    return RedirectToAction("MFACheck");
+                }
+                else
+                {
+                    if (!result.Succeeded)
                     {
-                        return RedirectToAction("Member", "Home");
+                        ModelState.AddModelError("Login", "Cannot login.");
+                    }
+                    else
+                    {
+                        return RedirectToAction("Index", "Home");
                     }
                 }
-                //else
-                //{
-                //    result.IsLockedOut gibi propertyleri kullanarak kontroller yapabiliriz. 
-                //    Ama güvenlik açısından mümkün olduğunca geri dönüş hatalarını açıklayıcı şekilde vermemeliyiz.
-                //}
-
-
-                ModelState.AddModelError("Login", "Cannot login.");
             }
 
+            return View(model);
+        }
+
+        public IActionResult MFACheck()
+        {
+            return View(new MNFACheckViewModel());
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> MFACheck(MNFACheckViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var result = await _signInManager.TwoFactorAuthenticatorSignInAsync(model.Code, false, false);
+                if (result.Succeeded)
+                {
+                    return RedirectToAction("Index", "Home", null);
+                }
+            }
             return View(model);
         }
 
