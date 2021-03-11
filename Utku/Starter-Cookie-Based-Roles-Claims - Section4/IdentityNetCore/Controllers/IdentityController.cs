@@ -43,9 +43,21 @@ namespace IdentityNetCore.Controllers
             return Challenge(properties, provider);
         }
 
-        public IActionResult ExternalLoginCallBack()
+        public async Task<IActionResult> ExternalLoginCallBack()
         {
-            return View();
+            var info = await _signInManager.GetExternalLoginInfoAsync();
+            var emailClaim = info.Principal.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email);
+            var user = new IdentityUser {Email = emailClaim.Value, UserName = emailClaim.Value};
+
+            //Aşağıdaki iki satır external user ile local user'ı ilişkilendiriyoruz.
+            //Burda yazmadık ama bu user daha önce oluşturuluş mu kontrolü yapmalıyız.
+
+            await _userManager.CreateAsync(user);
+            await _userManager.AddLoginAsync(user, info);
+
+            await _signInManager.SignInAsync(user, false);
+
+            return RedirectToAction("Index", "Home");
         }
 
         [HttpPost]
