@@ -48,6 +48,12 @@ namespace IdentityNetCore
                 options.ExpireTimeSpan = TimeSpan.FromHours(10);
             });
 
+            services.AddAuthentication().AddFacebook(options =>
+            {
+                options.AppId = Configuration["FacebookAppId"];
+                options.AppSecret = Configuration["FacebookAppSecret"];
+            });
+
             services.Configure<SmtpOptions>(Configuration.GetSection("Smtp"));
 
             services.AddSingleton<IEmailSender, SmtpEmailSender>();

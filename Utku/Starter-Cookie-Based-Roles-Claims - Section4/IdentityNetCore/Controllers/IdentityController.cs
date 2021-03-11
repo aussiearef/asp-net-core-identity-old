@@ -34,6 +34,21 @@ namespace IdentityNetCore.Controllers
         }
 
         [HttpPost]
+        public IActionResult ExternalLogin(string provider, string returnUrl=null)
+        {
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, returnUrl);
+            var callBackUrl = Url.Action("ExternalLoginCallBack");
+            properties.RedirectUri = callBackUrl;
+
+            return Challenge(properties, provider);
+        }
+
+        public IActionResult ExternalLoginCallBack()
+        {
+            return View();
+        }
+
+        [HttpPost]
         public async Task<IActionResult> Signup(SignupViewModel model)
         {
             if (ModelState.IsValid)
